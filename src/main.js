@@ -30,14 +30,14 @@ const gallery = $(".masonry");
 const dialog = $(".lightbox");
 const modalMedia = $(".lightbox-media");
 const colors = [
-  "#ebd8ce",
-  "#e5dbe2",
-  "#ebd6d5",
-  "#e8dfcc",
-  "#e0e5d2",
-  "#efdec9",
-  "#e5dce3",
-  "#efe0cd",
+  "#344b41",
+  "#37504b",
+  "#3d4e43",
+  "#485241",
+  "#304b46",
+  "#424f3e",
+  "#394d47",
+  "#3d5045",
 ];
 const ratios = ["1.06", ".82", "1.1", ".85", "1.1", ".86", "1.08", ".88"];
 const preload = new Map();
@@ -52,7 +52,7 @@ let modalTrigger;
 
 function picture(work, context) {
   const image = new Image();
-  image.alt = work.subtitle;
+  image.alt = work.description;
   image.draggable = false;
   image.decoding = "async";
   if (context === "gallery") {
@@ -78,7 +78,7 @@ function video(work) {
   clip.muted = clip.autoplay = clip.loop = clip.playsInline = true;
   clip.poster = asset(work.image);
   clip.src = asset(work.video);
-  clip.setAttribute("aria-label", work.subtitle);
+  clip.setAttribute("aria-label", work.description);
   clip.addEventListener(
     "error",
     () => clip.replaceWith(picture(work, "modal")),
@@ -98,7 +98,7 @@ function prepared(index) {
 function appendThumbnail(work, index) {
   const button = document.createElement("button");
   button.type = "button";
-  button.setAttribute("aria-label", `Букет ${work.id}. ${work.title}`);
+  button.setAttribute("aria-label", `Букет ${work.id}`);
   const label = document.createElement("span");
   label.textContent = work.id;
   label.setAttribute("aria-hidden", "true");
@@ -114,16 +114,18 @@ function appendWork(work, index) {
   button.className = "work";
   button.setAttribute("aria-haspopup", "dialog");
   button.innerHTML =
-    '<span class="work-image"></span><span class="work-info"><strong></strong><small></small></span>';
+    '<span class="work-image"></span><span class="work-info"></span>';
   const art = $(".work-image", button);
   art.style.setProperty("--card", colors[index % colors.length]);
   art.style.setProperty("--ratio", ratios[index % ratios.length]);
   const photo = picture(work, "gallery");
   photo.alt = "";
   art.append(photo);
-  $("strong", button).textContent = work.title;
-  $("small", button).textContent = work.id;
-  $("small", button).setAttribute("aria-hidden", "true");
+  $(".work-info", button).textContent = work.id;
+  button.setAttribute(
+    "aria-label",
+    `Открыть букет ${work.id}. ${work.description}`,
+  );
   button.addEventListener("click", () => openModal(index, button));
   gallery.append(button);
   return button;
@@ -154,18 +156,14 @@ function palette(image, index) {
     weight += alpha;
   }
   if (!weight) return colors[index % colors.length];
-  const base = [251, 241, 231];
-  return `rgb(${sum.map((value, channel) => Math.round(base[channel] * 0.67 + (0.33 * value) / weight)).join(",")})`;
+  const base = [14, 30, 25];
+  return `rgb(${sum.map((value, channel) => Math.round(base[channel] * 0.93 + (0.07 * value) / weight)).join(",")})`;
 }
 
 function slideText(index, animate, direction) {
   const work = works[index];
   const number = $("#slide-number");
-  const title = $("#slide-title");
-  const subtitle = $("#slide-subtitle");
   number.textContent = work.id;
-  title.textContent = work.title;
-  subtitle.textContent = work.subtitle;
   tabs.forEach((button, i) =>
     button.setAttribute("aria-current", String(i === index)),
   );
@@ -187,16 +185,6 @@ function slideText(index, animate, direction) {
     number,
     { yPercent: direction * 100 },
     { yPercent: 0, duration: 0.52, ease: "power3.out", overwrite: true },
-  );
-  gsap.fromTo(
-    title,
-    { yPercent: 105 },
-    { yPercent: 0, duration: 0.78, ease: "power4.out", overwrite: true },
-  );
-  gsap.fromTo(
-    subtitle,
-    { opacity: 0 },
-    { opacity: 1, duration: 0.6, overwrite: true },
   );
 }
 
@@ -457,9 +445,7 @@ function renderModal(index) {
   modalMedia.replaceChildren(
     work.video && !reduced.matches ? video(work) : picture(work, "modal"),
   );
-  $(".lightbox-counter").textContent = `${work.id} / ${total}`;
-  $("#lightbox-title").textContent = work.title;
-  $(".lightbox-caption p").textContent = work.subtitle;
+  $(".lightbox-counter").textContent = `Букет ${work.id} / ${total}`;
   if (!reduced.matches) {
     gsap.fromTo(
       modalMedia,
@@ -504,21 +490,26 @@ function configureContacts() {
       '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   };
   const links = [
-    ["Instagram", contacts.instagram],
     ["TikTok", contacts.tiktok],
+    ["Instagram", contacts.instagram],
     ["Почта", contacts.email ? `mailto:${contacts.email}` : ""],
-  ].filter(([, href]) => href);
+  ];
+  const activeLinks = links.filter(([, href]) => href);
   const dock = $(".social-dock");
-  $(".contact-empty").hidden = links.length > 0;
-  dock.hidden = !links.length;
+  $(".contact-empty").hidden = activeLinks.length === links.length;
+  dock.hidden = activeLinks.length === 0;
   for (const container of [$(".socials"), dock]) {
-    for (const [label, href] of links) {
-      const link = document.createElement("a");
-      link.className = "round";
-      link.href = href;
-      link.setAttribute("aria-label", label);
-      link.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[label]}</svg>`;
-      if (fine.matches) {
+    for (const [label, href] of container === dock ? activeLinks : links) {
+      const link = document.createElement(href ? "a" : "span");
+      link.className = container === dock ? "round" : "contact-item";
+      if (href) link.href = href;
+      if (container === dock) link.setAttribute("aria-label", label);
+      const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[label]}</svg>`;
+      link.innerHTML =
+        container === dock
+          ? icon
+          : `<span class="round">${icon}</span><span>${label}</span>`;
+      if (href && fine.matches) {
         link.addEventListener("pointermove", (event) => {
           if (reduced.matches) return;
           const rect = link.getBoundingClientRect();
@@ -565,21 +556,16 @@ function setupScroll() {
 reduced.addEventListener("change", setupScroll);
 setupScroll();
 
-function textParts(element, letters) {
-  const content = element.textContent;
-  const tokens = letters ? [...content] : content.split(/(\s+)/);
-  if (letters) element.setAttribute("aria-label", content);
-  element.replaceChildren(
-    ...tokens.map((part) => {
-      if (!part.trim()) return document.createTextNode(part);
-      const span = document.createElement("span");
-      span.className = letters ? "letter" : "word";
-      if (letters) span.setAttribute("aria-hidden", "true");
-      span.textContent = part;
-      return span;
-    }),
-  );
-  return [...element.children];
+function nameLetters(line) {
+  const letters = [...line.textContent].map((character) => {
+    const span = document.createElement("span");
+    span.className = "letter";
+    span.textContent = character;
+    return span;
+  });
+  line.setAttribute("aria-hidden", "true");
+  line.replaceChildren(...letters);
+  return letters;
 }
 
 function heroPetals() {
@@ -611,7 +597,7 @@ function heroPetals() {
 
 function entrance() {
   const loader = $(".loader");
-  const letters = textParts($("#hero-title"), true);
+  const letters = $$(".name-line").flatMap(nameLetters);
   let seen = false;
   try {
     seen = sessionStorage.getItem("herbier-intro") === "1";
@@ -684,18 +670,6 @@ if (richMotion()) {
         duration: 0.65,
         ease: "power3.out",
       }),
-  });
-  ScrollTrigger.create({
-    trigger: ".about-text",
-    start: "top 91%",
-    once: true,
-    onEnter: () => {
-      gsap.from(textParts($(".about-text"), false), {
-        opacity: 0.86,
-        stagger: 0.025,
-        duration: 0.38,
-      });
-    },
   });
   gsap.from(".contact h2", {
     y: 24,

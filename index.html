@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#f2e6df" />
+    <meta name="theme-color" content="#10201b" />
     <meta
       name="description"
-      content="Гербарий — портфолио флориста. Авторские букеты и цветочные композиции в интерактивной галерее."
+      content="Васильева Полина: демонстрация работ. Авторские букеты и цветочные композиции в интерактивной галерее."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
-    <meta property="og:title" content="Гербарий — портфолио флориста" />
+    <meta property="og:title" content="Васильева Полина: демонстрация работ" />
     <meta
       property="og:description"
       content="Авторские букеты и цветочные композиции. Рассмотрите каждую работу в деталях."
@@ -39,7 +39,7 @@
       href="%BASE_URL%assets/bouquets/01-480.webp"
       media="(max-width: 800px)"
     />
-    <title>Гербарий — портфолио флориста</title>
+    <title>Васильева Полина: демонстрация работ</title>
   </head>
   <body>
     <a class="skip" href="#collection">К коллекции</a>
@@ -55,11 +55,11 @@
     <header class="top" id="top">
       <a class="brand" href="#top"
         ><img src="%BASE_URL%flower.svg" width="28" height="28" alt="" /><span
-          >Гербарий</span
+          >Васильева Полина</span
         ></a
       >
       <nav aria-label="Навигация">
-        <a href="#collection">Коллекция</a><a href="#about">Обо мне</a
+        <a href="#collection">Работы</a
         ><a href="#contact">Контакты <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
@@ -67,20 +67,19 @@
       <section class="hero" aria-labelledby="hero-title">
         <div class="petals" aria-hidden="true"></div>
         <div class="hero-copy">
-          <p class="eyebrow"><span></span> Портфолио флориста</p>
-          <h1 id="hero-title">Гербарий</h1>
-          <p class="hero-description">
-            Собираю цветы в истории,<br />
-            которые хочется подарить.
-          </p>
+          <h1 id="hero-title" aria-label="Васильева Полина">
+            <span class="name-line">Васильева</span>
+            <span class="name-line">Полина</span>
+          </h1>
+          <p class="hero-description">Демонстрация работ</p>
           <a class="hero-link" href="#collection"
-            ><span>Смотреть коллекцию</span
+            ><span>Смотреть работы</span
             ><span class="round" aria-hidden="true">↘</span></a
           >
         </div>
         <figure class="hero-visual">
           <div class="arch"></div>
-          <span class="hero-star" aria-hidden="true">✧</span>
+
           <picture class="hero-photo"
             ><source
               media="(max-width: 800px)"
@@ -92,13 +91,9 @@
               width="960"
               height="960"
           /></picture>
-          <figcaption>
-            <span>Пудровый рассвет</span><span>01 / 08</span>
-          </figcaption>
         </figure>
         <div class="hero-bottom">
-          <a href="#collection"><span aria-hidden="true">↓</span> Листай</a
-          ><span>Избранные работы · 01–08</span>
+          <a href="#collection"><span aria-hidden="true">↓</span> Листай</a>
         </div>
       </section>
 
@@ -132,8 +127,6 @@
             <div class="counter">
               <span id="slide-number">01</span><span> / 08</span>
             </div>
-            <div class="slide-title"><h3 id="slide-title"></h3></div>
-            <p id="slide-subtitle"></p>
           </div>
           <div class="slide-controls">
             <button class="round" data-shift="-1" aria-label="Предыдущий букет">
@@ -158,37 +151,15 @@
         <div class="masonry"></div>
       </section>
 
-      <section class="about shell" id="about">
-        <figure class="about-photo">
-          <img
-            src="%BASE_URL%assets/bouquets/04-480.webp"
-            alt="Букет с бордовыми цветами и оливковой лентой"
-            loading="lazy"
-            width="480"
-            height="480"
-          />
-        </figure>
-        <div class="about-copy">
-          <span class="eyebrow">Обо мне</span>
-          <h2>У каждого букета<br />свой характер</h2>
-          <p class="about-text">
-            Мне нравится находить неожиданные сочетания в знакомых цветах.
-            Иногда всё начинается с оттенка, иногда с формы. А потом я подбираю
-            фактуру, бумагу и ленту, пока у букета не появится своё настроение.
-          </p>
-        </div>
-      </section>
-
       <footer id="contact" class="contact">
         <div class="contact-inner shell">
           <img src="%BASE_URL%flower.svg" width="42" height="42" alt="" />
           <h2>Давайте создадим<br />ваш букет</h2>
           <div class="socials" aria-label="Контакты"></div>
-          <p class="contact-empty">
-            Контакты появятся здесь после обновления портфолио.
-          </p>
+          <p class="contact-empty">Ссылки скоро появятся.</p>
           <div class="footer-base">
-            <a class="brand" href="#top">Гербарий</a><a href="#top">Наверх ↑</a>
+            <a class="brand" href="#top">Васильева Полина</a
+            ><a href="#top">Наверх ↑</a>
           </div>
         </div>
       </footer>
@@ -196,7 +167,11 @@
     <div class="social-dock" aria-label="Быстрые контакты" hidden></div>
     <dialog class="lightbox" aria-labelledby="lightbox-title">
       <div class="lightbox-head">
-        <span class="lightbox-counter"></span
+        <span
+          class="lightbox-counter"
+          id="lightbox-title"
+          aria-live="polite"
+        ></span
         ><button
           class="round"
           data-close
@@ -222,10 +197,6 @@
         >
           →
         </button>
-      </div>
-      <div class="lightbox-caption" aria-live="polite">
-        <h2 id="lightbox-title"></h2>
-        <p></p>
       </div>
     </dialog>
     <script type="module" src="/src/main.js"></script>
