@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f2e6df" />
+    <meta
+      name="description"
+      content="Гербарий — портфолио флориста. Авторские букеты и цветочные композиции в интерактивной галерее."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content="Гербарий — портфолио флориста" />
+    <meta
+      property="og:description"
+      content="Авторские букеты и цветочные композиции. Рассмотрите каждую работу в деталях."
+    />
+    <meta
+      property="og:image"
+      content="https://inv1nced.github.io/herbier-floral/cover.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://inv1nced.github.io/herbier-floral/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="%BASE_URL%flower.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="high"
+      href="%BASE_URL%assets/bouquets/01-960.webp"
+      media="(min-width: 801px)"
+    />
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="high"
+      href="%BASE_URL%assets/bouquets/01-480.webp"
+      media="(max-width: 800px)"
+    />
+    <title>Гербарий — портфолио флориста</title>
+  </head>
+  <body>
+    <a class="skip" href="#collection">К коллекции</a>
+    <div class="loader" aria-hidden="true" hidden>
+      <svg viewBox="0 0 64 64" fill="none">
+        <path
+          d="M32 32C11 31 8 13 19 12c8-1 13 8 13 20ZM32 32C19 15 26 3 34 7c8 4 6 15-2 25ZM32 32c8-21 25-20 25-9 0 8-13 13-25 9ZM32 32c22-2 26 16 15 20-8 3-14-7-15-20ZM32 32c10 20-4 30-11 23-6-6 1-17 11-23ZM32 32C19 47 6 42 8 33c2-8 13-8 24-1Z"
+        />
+      </svg>
+      <span>0%</span>
+    </div>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="top" id="top">
+      <a class="brand" href="#top"
+        ><img src="%BASE_URL%flower.svg" width="28" height="28" alt="" /><span
+          >Гербарий</span
+        ></a
+      >
+      <nav aria-label="Навигация">
+        <a href="#collection">Коллекция</a><a href="#about">Обо мне</a
+        ><a href="#contact">Контакты <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="petals" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> Портфолио флориста</p>
+          <h1 id="hero-title">Гербарий</h1>
+          <p class="hero-description">
+            Собираю цветы в истории,<br />
+            которые хочется подарить.
+          </p>
+          <a class="hero-link" href="#collection"
+            ><span>Смотреть коллекцию</span
+            ><span class="round" aria-hidden="true">↘</span></a
+          >
+        </div>
+        <figure class="hero-visual">
+          <div class="arch"></div>
+          <span class="hero-star" aria-hidden="true">✧</span>
+          <picture class="hero-photo"
+            ><source
+              media="(max-width: 800px)"
+              srcset="%BASE_URL%assets/bouquets/01-480.webp" />
+            <img
+              src="%BASE_URL%assets/bouquets/01-960.webp"
+              alt="Пудровый букет с белыми и розовыми цветами в бумажной упаковке"
+              fetchpriority="high"
+              width="960"
+              height="960"
+          /></picture>
+          <figcaption>
+            <span>Пудровый рассвет</span><span>01 / 08</span>
+          </figcaption>
+        </figure>
+        <div class="hero-bottom">
+          <a href="#collection"><span aria-hidden="true">↓</span> Листай</a
+          ><span>Избранные работы · 01–08</span>
+        </div>
+      </section>
+
+      <section
+        class="collection"
+        id="collection"
+        aria-labelledby="collection-title"
+        tabindex="0"
+      >
+        <div class="section-top">
+          <h2 id="collection-title">Коллекция</h2>
+          <span>Избранные букеты</span>
+        </div>
+        <div
+          class="slider"
+          aria-roledescription="карусель"
+          aria-label="Избранные букеты"
+        >
+          <div
+            class="stage"
+            id="stage"
+            aria-label="Потяните фото, чтобы сменить букет"
+          >
+            <div class="stage-arch" aria-hidden="true"></div>
+            <div class="media" id="media"></div>
+            <canvas class="transition" aria-hidden="true"></canvas>
+            <div class="glare" aria-hidden="true"></div>
+            <div class="stage-petals" aria-hidden="true"></div>
+          </div>
+          <div class="slide-meta" aria-live="polite" aria-atomic="true">
+            <div class="counter">
+              <span id="slide-number">01</span><span> / 08</span>
+            </div>
+            <div class="slide-title"><h3 id="slide-title"></h3></div>
+            <p id="slide-subtitle"></p>
+          </div>
+          <div class="slide-controls">
+            <button class="round" data-shift="-1" aria-label="Предыдущий букет">
+              ←</button
+            ><button class="round" data-shift="1" aria-label="Следующий букет">
+              →
+            </button>
+          </div>
+        </div>
+        <div class="filmstrip" aria-label="Выбрать букет"></div>
+      </section>
+
+      <section
+        class="gallery shell"
+        id="gallery"
+        aria-labelledby="gallery-title"
+      >
+        <div class="section-top">
+          <h2 id="gallery-title">Все работы</h2>
+          <span>08 композиций</span>
+        </div>
+        <div class="masonry"></div>
+      </section>
+
+      <section class="about shell" id="about">
+        <figure class="about-photo">
+          <img
+            src="%BASE_URL%assets/bouquets/04-480.webp"
+            alt="Букет с бордовыми цветами и оливковой лентой"
+            loading="lazy"
+            width="480"
+            height="480"
+          />
+        </figure>
+        <div class="about-copy">
+          <span class="eyebrow">Обо мне</span>
+          <h2>У каждого букета<br />свой характер</h2>
+          <p class="about-text">
+            Мне нравится находить неожиданные сочетания в знакомых цветах.
+            Иногда всё начинается с оттенка, иногда с формы. А потом я подбираю
+            фактуру, бумагу и ленту, пока у букета не появится своё настроение.
+          </p>
+        </div>
+      </section>
+
+      <footer id="contact" class="contact">
+        <div class="contact-inner shell">
+          <img src="%BASE_URL%flower.svg" width="42" height="42" alt="" />
+          <h2>Давайте создадим<br />ваш букет</h2>
+          <div class="socials" aria-label="Контакты"></div>
+          <p class="contact-empty">
+            Контакты появятся здесь после обновления портфолио.
+          </p>
+          <div class="footer-base">
+            <a class="brand" href="#top">Гербарий</a><a href="#top">Наверх ↑</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+    <div class="social-dock" aria-label="Быстрые контакты" hidden></div>
+    <dialog class="lightbox" aria-labelledby="lightbox-title">
+      <div class="lightbox-head">
+        <span class="lightbox-counter"></span
+        ><button
+          class="round"
+          data-close
+          aria-label="Закрыть просмотр"
+          autofocus
+        >
+          ×
+        </button>
+      </div>
+      <div class="lightbox-body">
+        <button
+          class="round"
+          data-modal-shift="-1"
+          aria-label="Предыдущая работа"
+        >
+          ←
+        </button>
+        <div class="lightbox-media"></div>
+        <button
+          class="round"
+          data-modal-shift="1"
+          aria-label="Следующая работа"
+        >
+          →
+        </button>
+      </div>
+      <div class="lightbox-caption" aria-live="polite">
+        <h2 id="lightbox-title"></h2>
+        <p></p>
+      </div>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
