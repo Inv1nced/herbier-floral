@@ -27,7 +27,7 @@ GitHub Pages публикует корень ветки `gh-pages`. Чтобы �
 
 ```sh
 npm run build
-npx gh-pages -d dist
+npx gh-pages --dotfiles -d dist
 ```
 
 В настройках **Settings → Pages** источник — **Deploy from a branch**, ветка `gh-pages`, папка `/ (root)`. Папка `dist/` подходит и для другого статического хостинга.
