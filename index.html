@@ -40,11 +40,11 @@
       media="(max-width: 800px)"
     />
     <title>Васильева Полина: демонстрация работ</title>
-    <script type="module" crossorigin src="./assets/index-CUCz4VSd.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-IP8vpWBQ.css">
+    <script type="module" crossorigin src="./assets/index-B2yY95vC.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BdbQhKz8.css">
   </head>
   <body>
-    <a class="skip" href="#collection">К коллекции</a>
+    <a class="skip" href="#gallery">К галерее</a>
     <div class="loader" aria-hidden="true" hidden>
       <svg viewBox="0 0 64 64" fill="none">
         <path
@@ -61,27 +61,30 @@
         ></a
       >
       <nav aria-label="Навигация">
-        <a href="#collection">Работы</a
+        <a href="#gallery">Галерея</a
         ><a href="#contact">Контакты <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
     <main>
       <section class="hero" aria-labelledby="hero-title">
-        <div class="petals" aria-hidden="true"></div>
         <div class="hero-copy">
           <h1 id="hero-title" aria-label="Васильева Полина">
             <span class="name-line">Васильева</span>
             <span class="name-line">Полина</span>
           </h1>
+        </div>
+        <div class="hero-intro">
           <p class="hero-description">Демонстрация работ</p>
-          <a class="hero-link" href="#collection"
+          <p class="hero-note">
+            Создаю букеты на заказ.<br />Подбираю цветы и оттенки под повод и
+            настроение.
+          </p>
+          <a class="hero-link" href="#gallery"
             ><span>Смотреть работы</span
             ><span class="round" aria-hidden="true">↘</span></a
           >
         </div>
         <figure class="hero-visual">
-          <div class="arch"></div>
-
           <picture class="hero-photo"
             ><source
               media="(max-width: 800px)"
@@ -94,9 +97,13 @@
               height="960"
           /></picture>
         </figure>
-        <div class="hero-bottom">
-          <a href="#collection"><span aria-hidden="true">↓</span> Листай</a>
+      </section>
+
+      <section class="gallery" id="gallery" aria-labelledby="gallery-title">
+        <div class="gallery-intro">
+          <h2 id="gallery-title">Галерея букетов</h2>
         </div>
+        <div class="bouquet-grid"></div>
       </section>
 
       <section
@@ -122,7 +129,6 @@
             <div class="stage-arch" aria-hidden="true"></div>
             <div class="media" id="media"></div>
             <div class="glare" aria-hidden="true"></div>
-            <canvas class="stage-petals" aria-hidden="true"></canvas>
           </div>
           <div class="slide-meta" aria-live="polite" aria-atomic="true">
             <div class="counter">
@@ -140,24 +146,12 @@
         <div class="filmstrip" aria-label="Выбрать букет"></div>
       </section>
 
-      <section
-        class="gallery shell"
-        id="gallery"
-        aria-labelledby="gallery-title"
-      >
-        <div class="section-top">
-          <h2 id="gallery-title">Все работы</h2>
-          <span>08 композиций</span>
-        </div>
-        <div class="masonry"></div>
-      </section>
-
       <footer id="contact" class="contact">
         <div class="contact-inner shell">
           <img src="./flower.svg" width="42" height="42" alt="" />
           <h2>Давайте создадим<br />ваш букет</h2>
           <div class="socials" aria-label="Контакты"></div>
-          <p class="contact-empty">Ссылки скоро появятся.</p>
+          <p class="contact-empty">Ссылки и номер телефона скоро появятся.</p>
           <div class="footer-base">
             <a class="brand" href="#top">Васильева Полина</a
             ><a href="#top">Наверх ↑</a>
@@ -192,7 +186,6 @@
         </button>
         <div class="lightbox-media">
           <div class="lightbox-picture"></div>
-          <canvas class="lightbox-petals" aria-hidden="true"></canvas>
         </div>
         <button
           class="round"
