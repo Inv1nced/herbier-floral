@@ -21,4 +21,5 @@ export const contacts = {
   instagram: "",
   tiktok: "",
   email: "",
+  phone: "",
 };

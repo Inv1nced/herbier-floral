@@ -3,7 +3,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { asset, works, contacts } from "./works.js";
-import { createPetalTransition } from "./petal-transition.js";
+import { createPhotoTransition } from "./photo-transition.js";
 import "@fontsource-variable/cormorant-garamond";
 import "@fontsource-variable/cormorant-garamond/wght-italic.css";
 import "@fontsource-variable/inter";
@@ -26,17 +26,13 @@ const collection = $("#collection");
 const stage = $("#stage");
 const media = $("#media");
 const filmstrip = $(".filmstrip");
-const gallery = $(".masonry");
+const gallery = $(".bouquet-grid");
 const dialog = $(".lightbox");
 const modalMedia = $(".lightbox-media");
 const modalPicture = $(".lightbox-picture");
-const slideEffect = createPetalTransition(media, $(".stage-petals"), reduced);
-const modalEffect = createPetalTransition(
-  modalPicture,
-  $(".lightbox-petals"),
-  reduced,
-);
-const ratios = ["1.06", ".82", "1.1", ".85", "1.1", ".86", "1.08", ".88"];
+const slideEffect = createPhotoTransition(media, reduced);
+const modalEffect = createPhotoTransition(modalPicture, reduced);
+const ratios = [".82", ".94", ".75", ".86", ".94", ".77", ".88", ".78"];
 const preload = new Map();
 let current = 0;
 let modalIndex = 0;
@@ -128,7 +124,6 @@ function appendWork(work, index) {
 const tabs = works.map(appendThumbnail);
 const cards = works.map(appendWork);
 $(".counter span:last-child").textContent = `/ ${total}`;
-$(".gallery .section-top>span").textContent = `Работы · ${total}`;
 
 function slideText(index, animate, direction) {
   const work = works[index];
@@ -158,11 +153,6 @@ function slideText(index, animate, direction) {
   );
 }
 
-function petalCount() {
-  if (lowPower) return 34;
-  return fine.matches ? 76 : 48;
-}
-
 async function go(index, direction = Math.sign(index - current) || 1) {
   index = wrap(index);
   const request = ++selection;
@@ -173,7 +163,7 @@ async function go(index, direction = Math.sign(index - current) || 1) {
   const work = works[index];
   const next = work.video && !reduced.matches ? video(work) : after.image;
   current = index;
-  slideEffect.swap(next, direction, petalCount(), after.image);
+  slideEffect.swap(next, direction);
   slideText(index, !reduced.matches, direction);
   prepared(wrap(index + 1));
   prepared(wrap(index - 1));
@@ -336,7 +326,7 @@ async function renderModal(index, direction = 0) {
   if (direction) await photo.decode().catch(() => {});
   if (request !== modalSelection || (direction && !dialog.open)) return;
   const next = work.video && !reduced.matches ? video(work) : photo;
-  modalEffect.swap(next, direction, petalCount(), photo);
+  modalEffect.swap(next, direction);
   $(".lightbox-counter").textContent = `Букет ${work.id} / ${total}`;
 }
 function openModal(index, trigger) {
@@ -367,6 +357,8 @@ function configureContacts() {
     Instagram:
       '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
     TikTok: '<path d="M14 3v12a4 4 0 1 1-4-4m4-8c.6 3.5 2.4 5.2 6 6"/>',
+    "Позвонить мне":
+      '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.8 3.2a2 2 0 0 1-.5 2.1L8.1 10.3a16 16 0 0 0 5.6 5.6l1.3-1.3a2 2 0 0 1 2.1-.5l3.2.8a2 2 0 0 1 1.7 2Z"/>',
     Почта:
       '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   };
@@ -374,6 +366,7 @@ function configureContacts() {
     ["TikTok", contacts.tiktok],
     ["Instagram", contacts.instagram],
     ["Почта", contacts.email ? `mailto:${contacts.email}` : ""],
+    ["Позвонить мне", contacts.phone ? `tel:${contacts.phone}` : ""],
   ];
   const activeLinks = links.filter(([, href]) => href);
   const dock = $(".social-dock");
@@ -437,33 +430,6 @@ function setupScroll() {
 reduced.addEventListener("change", setupScroll);
 setupScroll();
 
-function heroPetals() {
-  const holder = $(".petals");
-  for (let i = 0; i < 16; i++) {
-    const petal = document.createElement("i");
-    petal.className = "petal";
-    petal.style.cssText = `left:${(i * 37) % 101}%;--size:${5 + ((i * 7) % 13)}px;--duration:${13 + ((i * 5) % 14)}s;--delay:-${(i * 41) % 24}s;--drift:${i % 2 ? -115 : 155}px`;
-    holder.append(petal);
-  }
-  $(".hero").addEventListener("pointermove", (event) => {
-    if (!fine.matches || !richMotion()) return;
-    gsap.to(holder, {
-      x: (event.clientX / innerWidth - 0.5) * 90,
-      duration: 1.4,
-      ease: "power2.out",
-      overwrite: true,
-    });
-  });
-  const observer = new IntersectionObserver(([entry]) => {
-    $$(".petal", holder).forEach((petal) => {
-      petal.style.animationPlayState = entry.isIntersecting
-        ? "running"
-        : "paused";
-    });
-  });
-  observer.observe(holder);
-}
-
 function entrance() {
   const loader = $(".loader");
   const lines = $$(".name-line");
@@ -526,7 +492,6 @@ function entrance() {
 }
 
 if (richMotion()) {
-  heroPetals();
   entrance();
   ScrollTrigger.batch(cards, {
     start: "top 95%",
