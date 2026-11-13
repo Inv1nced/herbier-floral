@@ -3,8 +3,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { asset, works, contacts } from "./works.js";
-import { createDisplacement } from "./displacement.js";
+import { createPetalTransition } from "./petal-transition.js";
 import "@fontsource-variable/cormorant-garamond";
+import "@fontsource-variable/cormorant-garamond/wght-italic.css";
 import "@fontsource-variable/inter";
 import "./style.css";
 
@@ -24,29 +25,22 @@ const thumb = (work, size) => asset(`assets/bouquets/${work.id}-${size}.webp`);
 const collection = $("#collection");
 const stage = $("#stage");
 const media = $("#media");
-const canvas = $(".transition");
 const filmstrip = $(".filmstrip");
 const gallery = $(".masonry");
 const dialog = $(".lightbox");
 const modalMedia = $(".lightbox-media");
-const colors = [
-  "#344b41",
-  "#37504b",
-  "#3d4e43",
-  "#485241",
-  "#304b46",
-  "#424f3e",
-  "#394d47",
-  "#3d5045",
-];
+const modalPicture = $(".lightbox-picture");
+const slideEffect = createPetalTransition(media, $(".stage-petals"), reduced);
+const modalEffect = createPetalTransition(
+  modalPicture,
+  $(".lightbox-petals"),
+  reduced,
+);
 const ratios = ["1.06", ".82", "1.1", ".85", "1.1", ".86", "1.08", ".88"];
 const preload = new Map();
 let current = 0;
 let modalIndex = 0;
 let selection = 0;
-let displacement;
-let playingTransition = false;
-let queued;
 let lenis;
 let modalTrigger;
 
@@ -116,7 +110,6 @@ function appendWork(work, index) {
   button.innerHTML =
     '<span class="work-image"></span><span class="work-info"></span>';
   const art = $(".work-image", button);
-  art.style.setProperty("--card", colors[index % colors.length]);
   art.style.setProperty("--ratio", ratios[index % ratios.length]);
   const photo = picture(work, "gallery");
   photo.alt = "";
@@ -135,30 +128,6 @@ const tabs = works.map(appendThumbnail);
 const cards = works.map(appendWork);
 $(".counter span:last-child").textContent = `/ ${total}`;
 $(".gallery .section-top>span").textContent = `Работы · ${total}`;
-
-function palette(image, index) {
-  if (!image.naturalWidth) return colors[index % colors.length];
-  const sample = document.createElement("canvas");
-  sample.width = sample.height = 16;
-  const ctx = sample.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return colors[index % colors.length];
-  ctx.drawImage(image, 0, 0, 16, 16);
-  const { data } = ctx.getImageData(0, 0, 16, 16);
-  let weight = 0;
-  const sum = [0, 0, 0];
-  for (let i = 0; i < data.length; i += 4) {
-    const pixel = [data[i], data[i + 1], data[i + 2]];
-    const saturation = Math.max(...pixel) - Math.min(...pixel);
-    const alpha = (data[i + 3] / 255) * (0.25 + saturation / 128);
-    pixel.forEach((value, channel) => {
-      sum[channel] += value * alpha;
-    });
-    weight += alpha;
-  }
-  if (!weight) return colors[index % colors.length];
-  const base = [14, 30, 25];
-  return `rgb(${sum.map((value, channel) => Math.round(base[channel] * 0.93 + (0.07 * value) / weight)).join(",")})`;
-}
 
 function slideText(index, animate, direction) {
   const work = works[index];
@@ -188,102 +157,25 @@ function slideText(index, animate, direction) {
   );
 }
 
-function burst(direction) {
-  if (!richMotion()) return;
-  const container = $(".stage-petals");
-  for (let i = 0; i < 5; i++) {
-    const petal = document.createElement("i");
-    petal.className = "petal";
-    petal.style.cssText = `--size:${7 + i * 2}px;top:${32 + i * 7}%;left:${44 + i * 3}%;animation:none`;
-    container.append(petal);
-    petal
-      .animate(
-        [
-          { transform: "scale(.8)", opacity: 0 },
-          { opacity: 0.8, offset: 0.25 },
-          {
-            transform: `translate(${direction * (55 + 22 * i)}px,${-50 + 35 * i}px) rotate3d(1,1,1,270deg)`,
-            opacity: 0,
-          },
-        ],
-        { duration: 900 + i * 100, easing: "ease-out" },
-      )
-      .finished.then(() => petal.remove());
-  }
+function petalCount() {
+  if (lowPower) return 10;
+  return fine.matches ? 23 : 15;
 }
 
 async function go(index, direction = Math.sign(index - current) || 1) {
   index = wrap(index);
-  if (playingTransition) {
-    queued = { index, direction };
-    return;
-  }
   const request = ++selection;
   if (current === index) return;
-  const before = prepared(current);
   const after = prepared(index);
   await after.ready;
   if (request !== selection) return;
   const work = works[index];
   const next = work.video && !reduced.matches ? video(work) : after.image;
-  const motion = !reduced.matches;
-  let effect;
-  if (
-    motion &&
-    richMotion() &&
-    fine.matches &&
-    !work.video &&
-    !works[current].video
-  ) {
-    if (displacement === undefined) {
-      try {
-        displacement = createDisplacement(canvas);
-      } catch {
-        displacement = null;
-      }
-    }
-    try {
-      effect = displacement?.(before.image, after.image, direction);
-    } catch {
-      displacement = null;
-    }
-  }
-  playingTransition = Boolean(effect);
   current = index;
-  collection.style.setProperty("--slide-color", palette(after.image, index));
-  slideText(index, motion, direction);
-  burst(direction);
-  if (effect) {
-    media.style.visibility = "hidden";
-    await effect;
-    media.style.visibility = "";
-  }
-  media.replaceChildren(next);
-  if (!effect && motion) {
-    gsap.fromTo(
-      media,
-      {
-        clipPath: direction > 0 ? "inset(0 0 0 100%)" : "inset(0 100% 0 0)",
-        scale: 0.96,
-      },
-      {
-        clipPath: "inset(0 0 0 0)",
-        scale: 1,
-        duration: 0.8,
-        ease: "power4.out",
-        clearProps: "clipPath,scale",
-        overwrite: "auto",
-      },
-    );
-  }
-  playingTransition = false;
+  slideEffect.swap(next, direction, petalCount());
+  slideText(index, !reduced.matches, direction);
   prepared(wrap(index + 1));
   prepared(wrap(index - 1));
-  if (queued) {
-    const target = queued;
-    queued = undefined;
-    go(target.index, target.direction);
-  }
 }
 
 const first = prepared(0);
@@ -291,10 +183,6 @@ media.append(
   works[0].video && !reduced.matches ? video(works[0]) : first.image,
 );
 slideText(0, false, 1);
-first.ready.then(() => {
-  if (current === 0)
-    collection.style.setProperty("--slide-color", palette(first.image, 0));
-});
 const nearCollection = new IntersectionObserver(
   ([entry], observer) => {
     if (!entry.isIntersecting) return;
@@ -439,26 +327,13 @@ function arrowKeys(event, shift) {
 }
 collection.addEventListener("keydown", (event) => arrowKeys(event, shiftSlide));
 
-function renderModal(index) {
+function renderModal(index, direction = 0) {
   modalIndex = wrap(index);
   const work = works[modalIndex];
-  modalMedia.replaceChildren(
-    work.video && !reduced.matches ? video(work) : picture(work, "modal"),
-  );
+  const next =
+    work.video && !reduced.matches ? video(work) : picture(work, "modal");
+  modalEffect.swap(next, direction, petalCount());
   $(".lightbox-counter").textContent = `Букет ${work.id} / ${total}`;
-  if (!reduced.matches) {
-    gsap.fromTo(
-      modalMedia,
-      { opacity: 0.15, scale: 0.97 },
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 0.38,
-        ease: "power3.out",
-        overwrite: true,
-      },
-    );
-  }
 }
 function openModal(index, trigger) {
   modalTrigger = trigger;
@@ -466,7 +341,7 @@ function openModal(index, trigger) {
   dialog.showModal();
   lenis?.stop();
 }
-const shiftModal = (step) => renderModal(modalIndex + step);
+const shiftModal = (step) => renderModal(modalIndex + step, step);
 bindSwipe(modalMedia, shiftModal);
 $$("[data-modal-shift]").forEach((button) =>
   button.addEventListener("click", () =>
@@ -476,7 +351,8 @@ $$("[data-modal-shift]").forEach((button) =>
 dialog.addEventListener("keydown", (event) => arrowKeys(event, shiftModal));
 $("[data-close]").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => {
-  modalMedia.replaceChildren();
+  modalEffect.clear();
+  modalPicture.replaceChildren();
   lenis?.start();
   modalTrigger?.focus({ preventScroll: true });
 });
@@ -556,18 +432,6 @@ function setupScroll() {
 reduced.addEventListener("change", setupScroll);
 setupScroll();
 
-function nameLetters(line) {
-  const letters = [...line.textContent].map((character) => {
-    const span = document.createElement("span");
-    span.className = "letter";
-    span.textContent = character;
-    return span;
-  });
-  line.setAttribute("aria-hidden", "true");
-  line.replaceChildren(...letters);
-  return letters;
-}
-
 function heroPetals() {
   const holder = $(".petals");
   for (let i = 0; i < 16; i++) {
@@ -597,7 +461,7 @@ function heroPetals() {
 
 function entrance() {
   const loader = $(".loader");
-  const letters = $$(".name-line").flatMap(nameLetters);
+  const lines = $$(".name-line");
   let seen = false;
   try {
     seen = sessionStorage.getItem("herbier-intro") === "1";
@@ -606,10 +470,10 @@ function entrance() {
     /* Storage may be disabled. */
   }
   if (seen) {
-    gsap.from(letters, {
+    gsap.from(lines, {
       y: 25,
       opacity: 0,
-      stagger: 0.045,
+      stagger: 0.09,
       duration: 0.65,
       ease: "power3.out",
     });
@@ -643,12 +507,12 @@ function entrance() {
   );
   tl.to(loader, { yPercent: -100, duration: 0.83, ease: "expo.inOut" }, 1.28);
   tl.from(
-    letters,
+    lines,
     {
       y: 48,
       opacity: 0,
       filter: "blur(7px)",
-      stagger: 0.043,
+      stagger: 0.09,
       duration: 0.85,
       ease: "power4.out",
     },
