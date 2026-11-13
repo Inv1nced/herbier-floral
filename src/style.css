@@ -1,18 +1,18 @@
 :root {
   --ink: #161616;
-  --paper: #dce786;
+  --paper: #f6efbd;
   --pink: #f8d9e3;
   --pink-hover: #f5bfd0;
-  --line: #30371345;
+  --line: #51472145;
   --glass: linear-gradient(150deg, #fff2f7, var(--pink) 66%, #efb9ce);
-  --rim: inset 0 1px 0 #fff9, inset 0 0 0 3px #fff5f554, 0 18px 42px #40482325;
+  --rim: inset 0 1px 0 #fff9, inset 0 0 0 3px #fff5f554, 0 18px 42px #66552b23;
   --display: "Cormorant Garamond Variable", Georgia, serif;
   --body: "Inter Variable", Arial, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--ink);
   background:
-    radial-gradient(ellipse at 82% 42%, #f5f7b8 0%, transparent 68%),
-    linear-gradient(144deg, #b3c664, #e4ec95 47%, #a9bf60);
+    radial-gradient(ellipse at 82% 42%, #fff9de 0%, transparent 68%),
+    linear-gradient(144deg, #e6e8ad, #f9efb9 47%, #e5e8ac);
   font-family: var(--body);
   font-size: 15px;
 }
@@ -140,8 +140,8 @@ h2 {
       #fffce530 54%,
       transparent 68%
     ),
-    radial-gradient(ellipse at 76% 27%, #f8fac5 0%, transparent 52%),
-    linear-gradient(125deg, #b5ca66 10%, #e2e88d 54%, #a6bf5f 100%);
+    radial-gradient(ellipse at 76% 27%, #fff9de 0%, transparent 52%),
+    linear-gradient(125deg, #e9e8b0 10%, #f8efbb 54%, #dce3a1 100%);
   overflow: hidden;
 }
 .hero-copy {
@@ -323,8 +323,8 @@ h2 {
   padding: clamp(50px, 7vw, 106px) 6vw 36px;
   min-height: 100svh;
   background:
-    radial-gradient(ellipse at 53% 40%, #fcf9c5b0, transparent 57%),
-    linear-gradient(149deg, #dce68d, #c2d279 71%, #aebf68);
+    radial-gradient(ellipse at 53% 40%, #fff9dab0, transparent 57%),
+    linear-gradient(149deg, #f8efba, #eee8ad 71%, #e0e4a3);
 }
 .slider {
   position: relative;
@@ -533,8 +533,8 @@ h2 {
 .contact {
   text-align: center;
   background:
-    radial-gradient(ellipse at 50% 0%, #f4f6b6, transparent 72%),
-    linear-gradient(115deg, #b0c464, #e4e991 55%, #b5c970);
+    radial-gradient(ellipse at 50% 0%, #fff8d4, transparent 72%),
+    linear-gradient(115deg, #e7e7aa, #f7ecb3 55%, #e3e6a9);
   border-top: 1px solid var(--line);
   padding-top: clamp(60px, 9vw, 126px);
 }
@@ -832,19 +832,29 @@ a.contact-item:hover .round {
   margin-bottom: 42px;
 }
 
-.stage-petals,
-.lightbox-petals {
-  perspective: 680px;
+canvas.stage-petals,
+canvas.lightbox-petals {
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
   z-index: 2;
 }
-.flying-petal {
-  position: absolute;
-  aspect-ratio: 76 / 82;
-  background: url("/petal.svg") center / contain no-repeat;
+canvas.active {
+  visibility: visible;
 }
 .media > .outgoing,
 .lightbox-picture > .outgoing {
   position: absolute;
   inset: 0;
+}
+.petals-changing > img,
+.petals-changing > video {
   animation-play-state: paused;
+  filter: none;
+}
+@media (pointer: coarse) {
+  .media img,
+  .media video {
+    filter: none;
+  }
 }

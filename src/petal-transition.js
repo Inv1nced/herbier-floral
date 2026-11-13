@@ -1,109 +1,205 @@
-// A gust carries the petals sideways. Each petal drifts, tumbles and falls independently.
-export function createPetalTransition(surface, overlay, reduced) {
-  let animations = [];
+const duration = 1080;
+const turn = Math.PI * 2;
+const spriteSize = 96;
+const sprite = document.createElement("canvas");
+sprite.width = sprite.height = spriteSize;
+const artwork = new Image();
+artwork.src = `${import.meta.env.BASE_URL}petal.svg`;
+let spriteReady = false;
+artwork
+  .decode()
+  .then(() => {
+    sprite.getContext("2d").drawImage(artwork, 0, 0, spriteSize, spriteSize);
+    spriteReady = true;
+  })
+  .catch(() => {});
+
+const sample = document.createElement("canvas");
+sample.width = sample.height = 40;
+const sampler = sample.getContext("2d", { willReadFrequently: true });
+const silhouettes = new WeakMap();
+
+function silhouette(image) {
+  if (silhouettes.has(image)) return silhouettes.get(image);
+  if (!sampler || !image.naturalWidth) return [];
+
+  sampler.clearRect(0, 0, 40, 40);
+  sampler.drawImage(image, 0, 0, 40, 40);
+  const pixels = sampler.getImageData(0, 0, 40, 40).data;
+  const outline = [];
+  const blooms = [];
+  for (let y = 1; y < 39; y++) {
+    for (let x = 1; x < 39; x++) {
+      const alpha = (dx, dy) => pixels[((y + dy) * 40 + x + dx) * 4 + 3];
+      if (alpha(0, 0) < 232) continue;
+      const point = [(x + 0.5) / 40, (y + 0.5) / 40];
+      if (
+        alpha(-1, 0) < 175 ||
+        alpha(1, 0) < 175 ||
+        alpha(0, -1) < 175 ||
+        alpha(0, 1) < 175
+      )
+        outline.push(point);
+      if (y < 25) blooms.push(point);
+    }
+  }
+  const points = [...outline, ...outline, ...blooms];
+  silhouettes.set(image, points);
+  return points;
+}
+
+const clamp = (value) => Math.min(1, Math.max(0, value));
+const mix = (from, to, t) => from + (to - from) * t;
+const smooth = (t) => {
+  t = clamp(t);
+  return t * t * (3 - 2 * t);
+};
+
+function createParticles(count, width, height, photo, direction, framed) {
+  const padding = framed ? width * 0.05 : 0;
+  const naturalWidth = photo.naturalWidth || 1;
+  const naturalHeight = photo.naturalHeight || 1;
+  const scale = Math.min(
+    (width - padding * 2) / naturalWidth,
+    (height - padding * 2) / naturalHeight,
+  );
+  const photoWidth = naturalWidth * scale;
+  const photoHeight = naturalHeight * scale;
+  const points = silhouette(photo);
+
+  return Array.from({ length: count }, (_, i) => {
+    // Launch from all four sides, then curve out before landing on the next photo.
+    const angle = ((i + Math.random() * 0.8) / count) * turn;
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+    const rim = 1 / Math.max(Math.abs(dx), Math.abs(dy));
+    const depth = Math.random();
+    const target = points[Math.floor(Math.random() * points.length)] || [
+      0.2 + Math.random() * 0.6,
+      0.12 + Math.random() * 0.64,
+    ];
+
+    return {
+      x: width * (0.5 + dx * rim * (framed ? 0.37 : 0.42)),
+      y: height * (0.55 + dy * rim * 0.4),
+      arcX: width * (0.5 + dx * (0.38 + depth * 0.12) - dy * 0.09 * direction),
+      arcY: height * (0.5 + dy * (0.37 + depth * 0.12) + dx * 0.08 * direction),
+      endX: width / 2 + (target[0] - 0.5) * photoWidth,
+      endY: height / 2 + (target[1] - 0.5) * photoHeight,
+      size: 10 + depth * Math.min(46, width * 0.102),
+      angle,
+      depth,
+      spin: (i % 2 ? -1 : 1) * (3 + depth * 6),
+      delay: Math.random() * 0.09,
+    };
+  }).sort((a, b) => a.depth - b.depth);
+}
+
+function drawPetal(ctx, particle, progress, direction) {
+  const p = particle;
+  const t = clamp((progress - p.delay) / (0.94 - p.delay));
+  const out = 1 - (1 - clamp(t / 0.42)) ** 2;
+  const inwards = smooth((t - 0.42) / 0.58);
+  const flutter = Math.sin(t * turn * 1.6 + p.angle) * Math.sin(t * Math.PI);
+  const x = mix(mix(p.x, p.arcX, out), p.endX, inwards) + flutter * 15;
+  const y = mix(mix(p.y, p.arcY, out), p.endY, inwards) + flutter * 12;
+  const size = p.size * mix(0.62, 1.28, out) * mix(1, 0.39, inwards);
+  const face = Math.cos(p.angle + t * p.spin);
+  const rotation = p.angle + t * p.spin * 0.54 + flutter * 0.46 * direction;
+
+  ctx.save();
+  ctx.globalAlpha = smooth(t / 0.14) * (1 - smooth((t - 0.81) / 0.19));
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.scale(0.17 + 0.83 * Math.abs(face), 0.86 + 0.14 * face);
+  ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
+export function createPetalTransition(surface, canvas, reduced) {
+  const ctx = canvas.getContext("2d");
+  let frame = 0;
   let outgoing;
+  let incoming;
 
   function clear() {
-    for (const animation of animations) animation.cancel();
-    animations = [];
-    outgoing?.remove();
-    outgoing = undefined;
-    overlay.replaceChildren();
+    cancelAnimationFrame(frame);
+    canvas.classList.remove("active");
+    surface.classList.remove("petals-changing");
+    if (outgoing) {
+      outgoing.remove();
+      outgoing.classList.remove("outgoing");
+      outgoing.removeAttribute("aria-hidden");
+      outgoing.style.removeProperty("opacity");
+    }
+    incoming?.style.removeProperty("opacity");
+    outgoing = incoming = undefined;
   }
 
   reduced.addEventListener("change", clear);
 
-  function swap(next, direction, count) {
+  function swap(next, direction, count, photo = next) {
     const previous = surface.firstElementChild;
     clear();
-    if (reduced.matches || !previous || !direction) {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (
+      !ctx ||
+      reduced.matches ||
+      !previous ||
+      !direction ||
+      !width ||
+      !height
+    ) {
       surface.replaceChildren(next);
       return;
     }
 
-    const ghost = previous.cloneNode();
-    ghost.classList.add("outgoing");
-    ghost.setAttribute("aria-hidden", "true");
-    outgoing = ghost;
-    surface.replaceChildren(next, ghost);
+    outgoing =
+      previous.tagName === "VIDEO" ? document.createElement("img") : previous;
+    if (outgoing !== previous) outgoing.src = previous.poster;
+    outgoing.classList.add("outgoing");
+    outgoing.setAttribute("aria-hidden", "true");
+    incoming = next;
+    incoming.style.opacity = "0";
+    surface.replaceChildren(incoming, outgoing);
+    surface.classList.add("petals-changing");
 
-    const wind = -direction;
-    const easing = "cubic-bezier(.22,1,.36,1)";
-    const outgoingMotion = ghost.animate(
-      [
-        { opacity: 1, translate: "0" },
-        { opacity: 0, translate: `${wind * 5}% -1%` },
-      ],
-      { duration: 410, easing, fill: "both" },
+    const density = Math.min(
+      devicePixelRatio,
+      1.35,
+      Math.sqrt(620000 / (width * height)),
     );
-    const incomingMotion = next.animate(
-      [
-        { opacity: 0, translate: `${-wind * 4}% 1%` },
-        { opacity: 1, translate: "0" },
-      ],
-      { duration: 540, delay: 95, easing, fill: "both" },
+    canvas.width = Math.max(1, Math.round(width * density));
+    canvas.height = Math.max(1, Math.round(height * density));
+    ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+    const particles = createParticles(
+      count,
+      width,
+      height,
+      photo,
+      direction,
+      surface.classList.contains("media"),
     );
-    outgoingMotion.finished.then(
-      () => ghost.remove(),
-      () => ghost.remove(),
-    );
-    incomingMotion.finished.then(
-      () => incomingMotion.cancel(),
-      () => {},
-    );
-    animations.push(outgoingMotion, incomingMotion);
+    canvas.classList.add("active");
 
-    const width = overlay.clientWidth;
-    const height = overlay.clientHeight;
-    const petals = document.createDocumentFragment();
-
-    for (let i = 0; i < count; i++) {
-      const depth = Math.random();
-      const x = width * (0.26 + Math.random() * 0.48);
-      const y = height * (0.26 + Math.random() * 0.38);
-      const edge = wind > 0 ? width - x : x;
-      const travel = wind * (edge + 48 + depth * width * 0.36);
-      const lift = -(0.04 + Math.random() * 0.42) * height;
-      const fall = (Math.random() - 0.27) * height * 0.8;
-      const spin = (190 + Math.random() * 360) * (i % 2 ? 1 : -1);
-      const startAngle = Math.random() * 360;
-      const size = 13 + depth * Math.min(35, width * 0.075);
-      const petal = document.createElement("span");
-      petal.className = "flying-petal";
-      petal.style.cssText = `left:${x}px;top:${y}px;width:${size}px;--petal-angle:${startAngle}deg`;
-      petals.append(petal);
-
-      const animation = petal.animate(
-        [
-          {
-            transform:
-              "translate3d(0,0,-35px) rotateY(0deg) rotateZ(var(--petal-angle))",
-            opacity: 0,
-          },
-          {
-            transform: `translate3d(${travel * 0.2}px,${lift * 0.75}px,16px) rotateY(${spin * 0.3}deg) rotateZ(${startAngle + spin * 0.12}deg)`,
-            opacity: 1,
-            offset: 0.25,
-          },
-          {
-            transform: `translate3d(${travel * 0.61}px,${lift + fall * 0.18}px,${depth * 110}px) rotateY(${spin * 0.76}deg) rotateZ(${startAngle + spin * 0.38}deg)`,
-            opacity: 0.98,
-            offset: 0.61,
-          },
-          {
-            transform: `translate3d(${travel}px,${lift + fall}px,${depth * 200}px) rotateY(${spin}deg) rotateZ(${startAngle + spin * 0.63}deg)`,
-            opacity: 0,
-          },
-        ],
-        { duration: 640 + Math.random() * 410, delay: i * 8, fill: "both" },
-      );
-      animation.finished.then(
-        () => petal.remove(),
-        () => petal.remove(),
-      );
-      animations.push(animation);
+    const start = performance.now();
+    function draw(now) {
+      const t = clamp((now - start) / duration);
+      if (t >= 1) {
+        clear();
+        return;
+      }
+      outgoing.style.opacity = 1 - smooth((t - 0.04) / 0.31);
+      incoming.style.opacity = smooth((t - 0.53) / 0.43);
+      ctx.clearRect(0, 0, width, height);
+      if (spriteReady) {
+        for (const particle of particles)
+          drawPetal(ctx, particle, t, direction);
+      }
+      frame = requestAnimationFrame(draw);
     }
-    overlay.append(petals);
+    frame = requestAnimationFrame(draw);
   }
 
   return { swap, clear };

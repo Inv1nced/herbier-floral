@@ -40,6 +40,7 @@ const ratios = ["1.06", ".82", "1.1", ".85", "1.1", ".86", "1.08", ".88"];
 const preload = new Map();
 let current = 0;
 let modalIndex = 0;
+let modalSelection = 0;
 let selection = 0;
 let lenis;
 let modalTrigger;
@@ -158,8 +159,8 @@ function slideText(index, animate, direction) {
 }
 
 function petalCount() {
-  if (lowPower) return 10;
-  return fine.matches ? 23 : 15;
+  if (lowPower) return 34;
+  return fine.matches ? 76 : 48;
 }
 
 async function go(index, direction = Math.sign(index - current) || 1) {
@@ -172,7 +173,7 @@ async function go(index, direction = Math.sign(index - current) || 1) {
   const work = works[index];
   const next = work.video && !reduced.matches ? video(work) : after.image;
   current = index;
-  slideEffect.swap(next, direction, petalCount());
+  slideEffect.swap(next, direction, petalCount(), after.image);
   slideText(index, !reduced.matches, direction);
   prepared(wrap(index + 1));
   prepared(wrap(index - 1));
@@ -327,12 +328,15 @@ function arrowKeys(event, shift) {
 }
 collection.addEventListener("keydown", (event) => arrowKeys(event, shiftSlide));
 
-function renderModal(index, direction = 0) {
+async function renderModal(index, direction = 0) {
   modalIndex = wrap(index);
+  const request = ++modalSelection;
   const work = works[modalIndex];
-  const next =
-    work.video && !reduced.matches ? video(work) : picture(work, "modal");
-  modalEffect.swap(next, direction, petalCount());
+  const photo = picture(work, "modal");
+  if (direction) await photo.decode().catch(() => {});
+  if (request !== modalSelection || (direction && !dialog.open)) return;
+  const next = work.video && !reduced.matches ? video(work) : photo;
+  modalEffect.swap(next, direction, petalCount(), photo);
   $(".lightbox-counter").textContent = `Букет ${work.id} / ${total}`;
 }
 function openModal(index, trigger) {
@@ -351,6 +355,7 @@ $$("[data-modal-shift]").forEach((button) =>
 dialog.addEventListener("keydown", (event) => arrowKeys(event, shiftModal));
 $("[data-close]").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => {
+  modalSelection++;
   modalEffect.clear();
   modalPicture.replaceChildren();
   lenis?.start();
