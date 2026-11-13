@@ -163,9 +163,9 @@ h2 {
   grid-row: 2;
   grid-column: 1;
   justify-self: center;
-  width: min(53vw, 670px);
-  height: clamp(400px, 56svh, 650px);
-  margin-top: clamp(-42px, -3vw, -16px);
+  width: min(62vw, 830px);
+  height: clamp(410px, 59svh, 690px);
+  margin-top: clamp(-58px, -4.3vw, -27px);
   position: relative;
   z-index: 2;
   pointer-events: none;
@@ -611,7 +611,7 @@ a.contact-item:hover .round {
   }
   .hero-visual {
     width: min(88vw, 480px);
-    height: clamp(252px, 43svh, 430px);
+    height: clamp(252px, 44svh, 430px);
     margin-top: -5px;
   }
   .hero-intro {
